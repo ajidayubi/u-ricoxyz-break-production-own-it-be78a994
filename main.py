@@ -4,8 +4,9 @@ instant it breaks production.
 
 The program keeps a single fixed confession line, checks it against the
 bounty's gate (UTF-8 text, 1 to 200 characters, exactly one line, not
-only white space), writes it to entry.txt in the output directory, and
-verifies the file round-trips byte for byte.
+only white space, no leading or trailing white space), writes it to
+entry.txt in the output directory, and verifies the file round-trips
+byte for byte.
 
 Usage:
     python3 main.py
@@ -37,6 +38,8 @@ def validate(line):
         return "line is not text"
     if not line.strip():
         return "line is only white space"
+    if line != line.strip():
+        return "line has leading or trailing white space"
     try:
         line.encode("utf-8")
     except UnicodeEncodeError:
@@ -66,6 +69,9 @@ def main():
         written = handle.read()
     if written != data:
         print("entry.txt did not round-trip byte for byte", file=sys.stderr)
+        return 1
+    if written.decode("utf-8") != LINE:
+        print("entry.txt did not round-trip to the same text", file=sys.stderr)
         return 1
     print(LINE)
     return 0
